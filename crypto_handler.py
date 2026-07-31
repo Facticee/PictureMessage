@@ -1,7 +1,8 @@
 import base64
 import os
 
-from cryptography.fernet import Fernet
+from cryptography import fernet
+from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
@@ -9,18 +10,18 @@ def get_key(pw, salt):
     kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=480000)
     return base64.urlsafe_b64encode(kdf.derive(pw.encode()))
 
-def verschlüsseln(text, pw, salt):
-    f = Fernet(get_key(pw, salt))
-    res = f.encrypt(text.encode())
-    return res
+def verschlüsseln(message: str, pw: str, salt: bytes):
+    key = verschlüsseln(pw, salt)
+    fernet = Fernet(key)
+    return fernet.encrypt(message.encode())
 
-def entschlüsseln(data, pw, salt):
+def entschlüsseln(encrypted_bytes: bytes, pw: str, salt: bytes):
+    key = get_key(pw, salt)
+    fernet = Fernet(key)
     try:
-        f = Fernet(get_key(pw, salt))
-        return f.decrypt(data).decode()
-    except:
-        print("Error while decrypting! / Correct Password?")
-        return None
+        return fernet.decrypt(encrypted_bytes).decode()
+    except InvalidToken as exc:
+        raise ValueError("Decryption failes: Incorrect password or corrupted data.")
 
 if __name__ == "__main__":
 
