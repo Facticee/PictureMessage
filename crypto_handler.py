@@ -12,3 +12,11 @@ def verschlüsseln(text, pw, salt):
     f = Fernet(get_key(pw, salt))
     res = f.encrypt(text.encode())
     return res
+
+def entschlüsseln(data, pw, salt):
+    try:
+        f = Fernet(get_key(pw, salt))
+        return f.decrypt(salt).decode()
+    except:
+        print("Error while decrypting!")
+        return None
