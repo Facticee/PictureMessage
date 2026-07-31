@@ -20,9 +20,9 @@ def entschlüsseln(encrypted_bytes: bytes, pw: str, salt: bytes):
     fernet = Fernet(key)
     try:
         return fernet.decrypt(encrypted_bytes).decode()
-    except InvalidToken as exc:
-        raise ValueError("Decryption failes: Incorrect password or corrupted data.")
-
+    except InvalidToken:
+        print("Decryption Failed: Incorrect password?")
+        return None
 if __name__ == "__main__":
 
     passwort = "MyPassword"
