@@ -19,7 +19,7 @@ def entschlüsseln(data, pw, salt):
         f = Fernet(get_key(pw, salt))
         return f.decrypt(data).decode()
     except:
-        print("Error while decrypting!")
+        print("Error while decrypting! / Correct Password?")
         return None
 
 if __name__ == "__main__":
@@ -30,11 +30,13 @@ if __name__ == "__main__":
     salt = os.urandom(16)
 
     print(" DE- ENCRYPTION TEST")
-    print(f"Pre encrypted: {secret}")
+    print(f"Pre Encryption: {secret}")
 
     verschlüsselt = verschlüsseln(secret, passwort, salt)
-    print(f"encrypted {verschlüsselt}")
+    print(f"Encrypted {verschlüsselt}")
 
     entschlüsselt = entschlüsseln(verschlüsselt, passwort, salt)
     print(f"Decrypted: {entschlüsselt}")
 
+    print("Test with wrong password:")
+    entschlüsseln(verschlüsselt, "WrongMyPassword", salt)
