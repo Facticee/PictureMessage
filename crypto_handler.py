@@ -1,4 +1,5 @@
 import base64
+import os
 
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
@@ -20,3 +21,20 @@ def entschlüsseln(data, pw, salt):
     except:
         print("Error while decrypting!")
         return None
+
+if __name__ == "__main__":
+
+    passwort = "MyPassword"
+    secret = "Hello World"
+
+    salt = os.urandom(16)
+
+    print(" DE- ENCRYPTION TEST")
+    print(f"Pre encrypted: {secret}")
+
+    verschlüsselt = verschlüsseln(secret, passwort, salt)
+    print(f"encrypted {verschlüsselt}")
+
+    entschlüsselt = entschlüsseln(verschlüsselt, passwort, salt)
+    print(f"Decrypted: {entschlüsselt}")
+
