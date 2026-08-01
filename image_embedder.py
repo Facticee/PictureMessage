@@ -1,8 +1,5 @@
-from sys import byteorder
-
 import cv2
 import numpy as np
-from numpy.ma.core import shape, reshape
 
 
 def bytes_zu_bits(data_bytes: bytes):
@@ -53,16 +50,57 @@ def daten_verstecken(image_path: str, output_path: str, binary_message: bytes):
         return False
 
 
+
+def extract_data(image_path: str):
+
+    img = cv2.imread(image_path)
+    if img is None:
+        print(f"Image coudlnt be loaded under '{image_path}'")
+        return None
+
+    flat_img = img.flatten()
+
+    bit_chain_length = "".join(str(bit) for bit in (flat_img[:32] & 1))
+    data_length = int.from_bytes(bits_to_bytes(bit_chain_length), byteorder="big")
+
+    total_bits = 32 + (data_length * 8)
+    if total_bits > flat_img.size:
+        print("No secrets were found in the Image!")
+        return None
+
+    
+    message_bits = "".join(map(str, flat_img[32:total_bits] & 1))
+    return bits_to_bytes(message_bit_chain)
+
+
+
+
+
+
+
+
+
 if __name__ == "__main__":
 
     test_bild = np.zeros((100, 100, 3), dtype=np.uint8)
     test_bild[:] = (255, 0, 0)
     cv2.imwrite("test_input.png",test_bild)
 
-    secretmessage = "SecretMessage123!".encode("utf-8")
+    original_message = "SecretMessage123!"
+    secretmessage = original_message.encode("utf-8")
 
-    idk = daten_verstecken(image_path="test_input.png", output_path="test_output.png", binary_message=secretmessage,)
+    print("Embed data")
+    erfolg = daten_verstecken(image_path="test_input.png", output_path="test_output.png", binary_message=secretmessage)
 
-    if idk:
-        print("YAY")
+    if erfolg:
+        print("extract data")
+        extracted_bytes = extract_data("test_output.png")
 
+        if extracted_bytes:
+            extracted_message = extracted_bytes.decode("utf-8")
+            print(f"Message: {extracted_message}")
+
+            if extracted_message == original_message:
+                print("YAY")
+            else:
+                print("Failed")
