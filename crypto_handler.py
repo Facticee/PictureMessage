@@ -11,7 +11,7 @@ def get_key(pw, salt):
     return base64.urlsafe_b64encode(kdf.derive(pw.encode()))
 
 def verschlüsseln(message: str, pw: str, salt: bytes):
-    key = verschlüsseln(pw, salt)
+    key = get_key(pw, salt)
     fernet = Fernet(key)
     return fernet.encrypt(message.encode())
 
