@@ -29,7 +29,7 @@ def daten_verstecken(image_path: str, output_path: str, binary_message: bytes):
 
     # change to bit chain
     bit_chain = bytes_zu_bits(full_message)
-    total_bits = len(full_message)
+    total_bits = len(bit_chain)
 
     # checking if image is big enough
     flat_img = img.flatten()
@@ -42,9 +42,9 @@ def daten_verstecken(image_path: str, output_path: str, binary_message: bytes):
         ziel_bit = int(bit_chain[i]) # 0 or 1
         flat_img[i] = (pixel - (pixel % 2)) + ziel_bit
 
-    secret_image = flat_img.shape(img.reshape())
+    secret_image = flat_img.reshape(img.shape)
 
-    if cv2.imwirte(output_path, secret_image):
+    if cv2.imwrite(output_path, secret_image):
         print(f"Image was saved under '{output_path}'")
         return True
     else:
@@ -52,4 +52,17 @@ def daten_verstecken(image_path: str, output_path: str, binary_message: bytes):
         print("Please ensure the destination folder exists and the output file format is PNG.")
         return False
 
+
+if __name__ == "__main__":
+
+    test_bild = np.zeros((100, 100, 3), dtype=np.uint8)
+    test_bild[:] = (255, 0, 0)
+    cv2.imwrite("test_input.png",test_bild)
+
+    secretmessage = "SecretMessage123!".encode("utf-8")
+
+    idk = daten_verstecken(image_path="test_input.png", output_path="test_output.png", binary_message=secretmessage,)
+
+    if idk:
+        print("YAY")
 
