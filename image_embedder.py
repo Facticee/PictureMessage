@@ -13,113 +13,43 @@ def bits_to_bytes(bit_string: str):
 
 
 
+# final version (hoffentlich)
+def daten_verstecken(image_path: str, output_path: str, binary_message: bytes):
 
-
-
-
-
-
-# version 1 von nachricht da drin packen ins bild
-def daten_verstecken(bild_pfad, ziel_pfad, daten):
-    img = cv2.imread(bild_pfad)
-    if img is None:
-        print("No Image was found!")
-        return False
-
-    länge = len(daten)
-    header = länge.to_bytes(4, byteorder="big")
-    gesamt_daten = header + daten
-
-    bits = bytes_zu_bits(gesamt_daten)
-
-    flat = img.flatten()
-    if len(bits) > len(flat):
-        print("Image is too small ")
-        return False
-
-    for i in range(len(bits)):
-        if bits[i] == "1":
-            flat[i] = flat[i] | 1
-        else:
-            flat[i] = flat[i] & 254
-
-    neues_bild = flat.reshape(img.shape)
-
-    return True
-
-# Version 3 final
-def embed_data(image_path: str, ziel_pfad: str, daten: bytes):
-
+    # loading image
     img = cv2.imread(image_path)
     if img is None:
-        print(f"No Image found under '{image_path}'")
+        print(f"Image couldnt be loaded under '{image_path}'")
         return False
 
-    data_length = len(daten)
-    header = data_length.to_bytes(4)
-    gesamte_daten = header + data_length
-
-    bit_chain = bytes_zu_bits(gesamte_daten)
-    anzahl_bits = len(bit_chain)
-
-    flat_img = img.flatten()
-    if anzahl_bits > len(flat_img):
-        print("Image too small for the message")
-        return False
-
-    for i in range(anzahl_bits):
-        if anzahl_bits[i] == 1:
-            flat_img[i] = flat_img[i] | 1
-        else:
-            flat_img[i] = flat_img[i] & 254
-
-    neues_bild = flat_img.reshape(img.shape)
-    cv2.imwrite(ziel_pfad, neues_bild)
-    print(f"Saved in {ziel_pfad}")
-    return True
-
-
-# version 2 von nachricht da drin ins bild packen XXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-def embed_data(image_path: str, output_path: str, binary_message: bytes):
-    img = cv2.imread(image_path)
-    if img is None:
-        print("Couldnt load input image!")
-        return False
-
-    img = cv2.imread(image_path)
-    if img is None:
-        raise FileNotFoundError(
-            "Couldnt load input image!"
-        )
-
+    # putting message together
     data_length = len(binary_message)
-    length_bytes = data_length.to_bytes(4, byteorder="big")
-    full_binary_message = length_bytes + binary_message
+    length_info = data_length.to_bytes(4, byteorder="big")
+    full_message = length_info + binary_message
 
-    bit_stream = bytes_zu_bits(full_binary_message)
-    total_bits = len(bit_stream)
+    # change to bit chain
+    bit_chain = bytes_zu_bits(full_message)
+    total_bits = len(full_message)
 
-    #test
-
+    # checking if image is big enough
     flat_img = img.flatten()
     if total_bits > flat_img.size:
-        raise ValueError(f"Image capacity exceeded! Needs: {total_bits} - Available {flat_img.size} ")
+        print(f"Image is too small - Available: {flat_img.size} Bits, Needed: {total_bits} Bits")
+        return False
 
-    #test
-
-    total_pixels = img.shape[0] * img.shape[1] * img.shape[2]
-    if total_pixels > total_bits:
-        raise ValueError(
-            "The Image is too small"
-        )
-
-    flat_img = img.flatten()
     for i in range(total_bits):
-        flat_img[i] = (flat_img & 0xFE) | int(bit_stream[i])
+        pixel = flat_img[i]
+        ziel_bit = int(bit_chain[i]) # 0 or 1
+        flat_img[i] = (pixel - (pixel % 2)) + ziel_bit
 
-    reshaped_img = flat_img.reshape(img.shape)
+    secret_image = flat_img.shape(img.reshape())
 
-    return True
+    if cv2.imwirte(output_path, secret_image):
+        print(f"Image was saved under '{output_path}'")
+        return True
+    else:
+        print(f"Error while saving under '{output_path}'")
+        print("Please ensure the destination folder exists and the output file format is PNG.")
+        return False
 
 
