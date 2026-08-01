@@ -18,7 +18,7 @@ def verstecken():
 
     img_pfad = clean_path(input("Path to Image: "))
     if not os.path.exists(img_pfad):
-        console.print("[red]No Image was found[/red]\n")
+        console.print("[red]No Image was found![/red]\n")
         return
 
     ziel_pfad = clean_path(input("Destination File (has to be PNG): "))
@@ -30,7 +30,7 @@ def verstecken():
         console.print("[red]Message cant be empty[/red]")
         return
 
-    pw = getpass("Password: ").strip()
+    pw = getpass.getpass("Password: ").strip()
 
     salt = os.urandom(16)
     secret_bytes = crypto_handler.verschlüsseln(text, pw, salt)
@@ -50,7 +50,7 @@ def auslesen():
 
     img_pfad = clean_path(input("Path to Image: "))
     if not os.path.exists(img_pfad):
-        print("No Image was found!")
+        print("[red]No Image was found![/red]")
         return
 
     pw = getpass.getpass("Password: ").strip()
@@ -63,7 +63,7 @@ def auslesen():
     salt = binary[:16]
     secret_bytes = binary[16:]
 
-    text = crypto_handler.entschlüsselt(secret_bytes, pw, salt)
+    text = crypto_handler.entschlüsseln(secret_bytes, pw, salt)
     if text is not None:
         print("-------------------------")
         print("Secret Message:", text)
@@ -71,7 +71,6 @@ def auslesen():
 
     else:
         console.print("[red]Error while Extracting / Decrypting! Wrong password?[/red]")
-
 
 
 
