@@ -1,23 +1,36 @@
 import getpass
 import os
 
+from rich import console
+from rich.console import Console
+from rich.panel import Panel
+
 import crypto_handler
 import image_embedder
 
+def clean_path(path_str: str):
+    return path_str.strip().strip('"').strip("'")
+
 def verstecken():
-    print("HIDE MESSAGE")
-    img_pfad = input("Path to image: ").strip().strip('"').strip('"')
+    print("[bold cyan] Hide message in Image [/bold cyan]")
+    img_pfad = clean_path(input("Path to Image: "))
+    if not os.path.exists(img_pfad):
+        console.print("[red] No Image was found! [/red]")
 
-    if os.path.exists(img_pfad):
-        print("Image couldnt be found!")
-        return
 
-    ziel_pfad = input("Destination Image (has to be PNG): ").strip().strip('"').strip('"')
-    if not ziel_pfad.lower().endswith('.png'):
+    ziel_pfad = clean_path(input("Destination File (has to be PNG): "))
+    if not  ziel_pfad.lower().endswith(".png"):
         ziel_pfad += ".png"
 
-    text = input("Messagee: ")
-    pw = getpass.getpass("Password: ")
+    text = input("Message: ").strip()
+    pw = getpass("Password: ").strip()
+
+    if not text:
+        print("Message cannot be empty!")
+
+    if not pw:
+        print("Password cannot be empty!")
+
 
     salt = os.urandom(16)
     secret_bytes = crypto_handler.verschlüsseln(text, pw, salt)
@@ -26,17 +39,18 @@ def verstecken():
 
     yay = image_embedder.daten_verstecken(img_pfad, ziel_pfad, binary)
     if yay:
-        print("yay it worked")
+        print("TEST")
 
 
 def auslesen():
-    print("Extract Message")
-    img_pfad = input("Path to image: ").strip().strip('"').strip('"')
+    print("--- Extract Message ---")
+    img_pfad = clean_path(input("Path to Image: "))
 
     if not os.path.exists(img_pfad):
-        print("No Image could be found!")
+        print("No Image was found!")
+        return
 
-    pw = getpass.getpass("Password: ")
+    pw = getpass.getpass("Password: ").strip()
 
     binary = image_embedder.extract_data(img_pfad)
     if binary is None:
@@ -45,11 +59,14 @@ def auslesen():
     salt = binary[:16]
     secret_bytes = binary[16:]
 
-    text = crypto_handler.entschlüsseln(secret_bytes, pw, salt)
+    text = crypto_handler.entschlüsselt(secret_bytes, pw, salt)
     if text is not None:
         print("-------------------------")
         print("Secret Message:", text)
         print("-------------------------")
+
+
+
 
 while True:
     print("1. Hide message in Image")
