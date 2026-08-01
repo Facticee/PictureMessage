@@ -8,29 +8,29 @@ from rich.panel import Panel
 import crypto_handler
 import image_embedder
 
+console = Console()
+
 def clean_path(path_str: str):
     return path_str.strip().strip('"').strip("'")
 
 def verstecken():
-    print("[bold cyan] Hide message in Image [/bold cyan]")
+    console.print(Panel("[bold cyan]Hide message in Image[/bold cyan]"))
+
     img_pfad = clean_path(input("Path to Image: "))
     if not os.path.exists(img_pfad):
-        console.print("[red] No Image was found! [/red]")
-
+        console.print("[red]No Image was found[/red]\n")
+        return
 
     ziel_pfad = clean_path(input("Destination File (has to be PNG): "))
     if not  ziel_pfad.lower().endswith(".png"):
         ziel_pfad += ".png"
 
     text = input("Message: ").strip()
-    pw = getpass("Password: ").strip()
-
     if not text:
-        print("Message cannot be empty!")
+        console.print("[red]Message cant be empty[/red]")
+        return
 
-    if not pw:
-        print("Password cannot be empty!")
-
+    pw = getpass("Password: ").strip()
 
     salt = os.urandom(16)
     secret_bytes = crypto_handler.verschlüsseln(text, pw, salt)
@@ -39,13 +39,16 @@ def verstecken():
 
     yay = image_embedder.daten_verstecken(img_pfad, ziel_pfad, binary)
     if yay:
-        print("TEST")
+        console.print("[green] Message successfully hidden in Image [/green]")
+    else:
+        console.print("[red] Error while embedding the message. ")
+        print("Please ensure the destination folder exists and the output file format is PNG.")
 
 
 def auslesen():
-    print("--- Extract Message ---")
-    img_pfad = clean_path(input("Path to Image: "))
+    console.print(Panel("[bold yellow] Extracting Message[/bold yellow]"))
 
+    img_pfad = clean_path(input("Path to Image: "))
     if not os.path.exists(img_pfad):
         print("No Image was found!")
         return
@@ -54,6 +57,7 @@ def auslesen():
 
     binary = image_embedder.extract_data(img_pfad)
     if binary is None:
+        console.print("[red]No valid secrets found in Image[/red]")
         return
 
     salt = binary[:16]
@@ -65,13 +69,17 @@ def auslesen():
         print("Secret Message:", text)
         print("-------------------------")
 
+    else:
+        console.print("[red]Error while Extracting / Decrypting! Wrong password?[/red]")
+
 
 
 
 while True:
-    print("1. Hide message in Image")
-    print("2. Extract Message from Image")
-    print("3. Close")
+    console.print("[bold magenta]---[ HiddenMessages ]---[/bold magenta]")
+    console.print("1. Hide message in Image")
+    console.print("2. Extract Message from Image")
+    console.print("3. Close")
 
     wahl = input("Choice (1-3): ")
 
@@ -83,4 +91,4 @@ while True:
         print("Exit")
         break
     else:
-        print("Invalid Choice")
+        print("Invalid Choice! Choose 1, 2 or 3")
