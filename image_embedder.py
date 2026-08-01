@@ -52,10 +52,10 @@ def daten_verstecken(image_path: str, output_path: str, binary_message: bytes):
 
 
 def extract_data(image_path: str):
-
     img = cv2.imread(image_path)
+
     if img is None:
-        print(f"Image coudlnt be loaded under '{image_path}'")
+        print(f"Image couldnt be loaded / found under '{image_path}'")
         return None
 
     flat_img = img.flatten()
@@ -64,12 +64,13 @@ def extract_data(image_path: str):
     data_length = int.from_bytes(bits_to_bytes(bit_chain_length), byteorder="big")
 
     total_bits = 32 + (data_length * 8)
+
     if total_bits > flat_img.size:
         print("No secrets were found in the Image!")
         return None
 
-    
-    message_bits = "".join(map(str, flat_img[32:total_bits] & 1))
+    message_bit_chain = "".join(map(str, flat_img[32:total_bits] & 1))
+
     return bits_to_bytes(message_bit_chain)
 
 
